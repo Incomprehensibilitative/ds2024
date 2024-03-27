@@ -9,6 +9,8 @@
 #define PORT 8080
 
 int main(void) {
+
+  /* ==== Establish the connection  ==== */
   struct sockaddr_in server_address;
   int server_socket;
   char buffer[1024] = {0};
@@ -37,13 +39,38 @@ int main(void) {
     exit(EXIT_FAILURE);
   }
 
-  send(server_socket, message, strlen(message), 0);
-  printf("Message sent\n");
+  /* ==== File Transfer  ==== */
+  FILE *fp = fopen("file.txt", "r");
+  char *file_name = "file";
 
-  recv(server_socket, buffer, 1024, 0);
-  printf("Message received: %s\n", buffer);
+  if (fp == NULL) {
+    perror("fopen failed");
+    exit(EXIT_FAILURE);
+  }
 
-  shutdown(server_socket, SHUT_RDWR);
+  send(server_socket, file_name, strlen(file_name), 0);
+
+  if (recv(server_socket, buffer, 1024, 0) < 0) {
+    perror("Filename not received");
+    exit(EXIT_FAILURE);
+  }
+
+  if (strcmp(buffer, "Filename Received") == 0) {
+    printf("Filename Received\n");
+    while (fgets(buffer, 1024, fp) != NULL) {
+      printf("Sending: %s\n", buffer);
+      send(server_socket, buffer, strlen(buffer), 0);
+      memset(buffer, 0, 1024);
+    }
+    // Add a delimiter at the end of the file content
+    char delimiter[] = "\0";
+    send(server_socket, delimiter, sizeof(delimiter), 0);
+  }
+
+  // Send the "File Sent" message
+  send(server_socket, "File Sent", strlen("File Sent"), 0);
+
+  fclose(fp);
 
   return EXIT_SUCCESS;
 }

@@ -4,7 +4,7 @@
 #include <string.h>
 #include <sys/socket.h> // socket, setsockopt, bind, listen, accept functions
 #include <sys/types.h>
-
+#include <unistd.h>
 #define PORT 8080
 
 int main(void) {
@@ -68,15 +68,42 @@ int main(void) {
     exit(EXIT_FAILURE);
   }
 
-  // Read the message from the client
+  // Read the file name from the client
   recv(client_socket, buffer, 1024, 0);
-  printf("Client: %s\n", buffer);
+  char *file_name = buffer;
+  printf("File name received: %s\n", file_name);
 
-  send(client_socket, message, strlen(message), 0);
-  printf("Hello message sent\n");
+  // Append the server to the file name
+  strcat(file_name, "_server.txt");
+  printf("File name appended: %s\n", file_name);
 
-  // Close the sockets
-  shutdown(client_socket, SHUT_RDWR);
-  shutdown(server_socket, SHUT_RDWR);
+  send(client_socket, "Filename Received", strlen("Filename Received"), 0);
+
+  // Open the file
+  FILE *fp = fopen(file_name, "w");
+
+  if (fp == NULL) {
+    perror("fopen failed");
+    exit(EXIT_FAILURE);
+  }
+
+  while (recv(client_socket, buffer, sizeof(buffer) - 1, 0) > 0) {
+    if (strcmp(buffer, "\0") == 0) {
+      break;
+    }
+    fputs(buffer, fp);
+    memset(buffer, 0, sizeof(buffer));
+  }
+
+  if (fp == NULL) {
+    perror("fputs failed");
+    exit(EXIT_FAILURE);
+  }
+
+  // Now read the "File Sent" message
+  recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+  printf("%s\n", buffer); // Should print "File Sent"
+  fclose(fp);
+
   return EXIT_SUCCESS;
 }
