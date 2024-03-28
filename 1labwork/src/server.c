@@ -27,22 +27,11 @@ int main(void) {
     exit(EXIT_FAILURE);
   }
 
-  // Set the server socket options
-  int option = 1;
-
-  // Server socket: TCP, IPv4
-  if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &option,
-                 sizeof(option))) {
-    perror("setsockopt failed");
-    exit(EXIT_FAILURE);
-  }
-
   // Set the server address
   server_address.sin_family = AF_INET;         // IPv4
   server_address.sin_addr.s_addr = INADDR_ANY; // 0.0.0.0
   // use htons to convert from host byte order to network byte order
   server_address.sin_port = htons(PORT); // port number
-  server_address.sin_zero[7] = 0;        // padding
 
   // Bind the server socket to the server address
   if (bind(server_socket, (struct sockaddr *)&server_address,
@@ -50,12 +39,14 @@ int main(void) {
     perror("bind failed");
     exit(EXIT_FAILURE);
   }
+  printf("Binding Successful\n");
 
   // Listen for incoming connections
   if (listen(server_socket, 3) < 0) {
     perror("listen failed");
     exit(EXIT_FAILURE);
   }
+  printf("Listening...\n");
 
   length_of_address = sizeof(client_address);
 
@@ -67,6 +58,7 @@ int main(void) {
     perror("accept failed");
     exit(EXIT_FAILURE);
   }
+  printf("Connection accepted\n");
 
   // Read the file name from the client
   recv(client_socket, buffer, 1024, 0);
@@ -88,16 +80,12 @@ int main(void) {
   }
 
   while (recv(client_socket, buffer, sizeof(buffer) - 1, 0) > 0) {
-    if (strcmp(buffer, "File Sent\n") == 0) {
-      printf("File received successfully\n");
-      break;
-    }
     fputs(buffer, fp);
     printf("Receiving: %s\n", buffer);
     memset(buffer, 0, sizeof(buffer));
   }
-
   fclose(fp);
+  printf("File received\n");
 
   close(client_socket);
   close(server_socket);

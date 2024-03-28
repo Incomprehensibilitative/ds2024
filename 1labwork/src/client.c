@@ -22,12 +22,7 @@ int main(void) {
     perror("socket failed");
     exit(EXIT_FAILURE);
   }
-
-  if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &option,
-                 sizeof(option))) {
-    perror("setsockopt failed");
-    exit(EXIT_FAILURE);
-  }
+  printf("Socket created\n");
 
   server_address.sin_family = AF_INET;
   server_address.sin_addr.s_addr = INADDR_ANY;
@@ -39,6 +34,7 @@ int main(void) {
     perror("connect failed");
     exit(EXIT_FAILURE);
   }
+  printf("Connected to server\n");
 
   /* ==== File Transfer  ==== */
   FILE *fp = fopen("file.txt", "r");
@@ -48,6 +44,7 @@ int main(void) {
     perror("fopen failed");
     exit(EXIT_FAILURE);
   }
+  printf("File opened\n");
 
   send(server_socket, file_name, strlen(file_name), 0);
 
@@ -55,17 +52,17 @@ int main(void) {
     perror("Filename not received");
     exit(EXIT_FAILURE);
   }
+  printf("Filename Received\n");
 
-  if (strcmp(buffer, "Filename Received") == 0) {
-    while (fgets(buffer, 1024, fp) != NULL) {
-      printf("Sending: %s\n", buffer);
-      send(server_socket, buffer, strlen(buffer), 0);
-      memset(buffer, 0, 1024);
-    }
-    fclose(fp);
+  while (fgets(buffer, 1024, fp) != NULL) {
+    printf("Sending: %s\n", buffer);
+    send(server_socket, buffer, strlen(buffer), 0);
+    memset(buffer, 0, 1024);
   }
+
+  fclose(fp);
+  printf("File Sent\n");
   // Send the "File Sent" message
-  send(server_socket, "File Sent", strlen("File Sent"), 0);
   close(server_socket);
 
   return EXIT_SUCCESS;
