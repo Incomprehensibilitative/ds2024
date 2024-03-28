@@ -99,11 +99,14 @@ int main(void) {
     perror("fputs failed");
     exit(EXIT_FAILURE);
   }
+  fclose(fp);
 
   // Now read the "File Sent" message
   recv(client_socket, buffer, sizeof(buffer) - 1, 0);
   printf("%s\n", buffer); // Should print "File Sent"
-  fclose(fp);
+
+  close(client_socket);
+  close(server_socket);
 
   return EXIT_SUCCESS;
 }

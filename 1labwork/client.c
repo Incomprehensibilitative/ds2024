@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/socket.h> // socket, setsockopt, bind, listen, accept functions
 #include <sys/types.h>
+#include <unistd.h>
 
 #define PORT 8080
 
@@ -66,11 +67,12 @@ int main(void) {
     char delimiter[] = "\0";
     send(server_socket, delimiter, sizeof(delimiter), 0);
   }
+  fclose(fp);
 
   // Send the "File Sent" message
   send(server_socket, "File Sent", strlen("File Sent"), 0);
 
-  fclose(fp);
+  close(server_socket);
 
   return EXIT_SUCCESS;
 }
