@@ -32,12 +32,6 @@ struct retreive_file_res {
 };
 typedef struct retreive_file_res retreive_file_res;
 
-struct send_file_args {
-	char *fname;
-	char *fdata;
-};
-typedef struct send_file_args send_file_args;
-
 #define FILETRANSFER_PROG 0x20000000
 #define FILETRANSFER_VERS 1
 
@@ -46,8 +40,8 @@ typedef struct send_file_args send_file_args;
 extern  retreive_file_res * retreive_file_1(char **, CLIENT *);
 extern  retreive_file_res * retreive_file_1_svc(char **, struct svc_req *);
 #define send_file 2
-extern  send_file_res * send_file_1(send_file_args *, CLIENT *);
-extern  send_file_res * send_file_1_svc(send_file_args *, struct svc_req *);
+extern  send_file_res * send_file_1(char **, CLIENT *);
+extern  send_file_res * send_file_1_svc(char **, struct svc_req *);
 extern int filetransfer_prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -65,12 +59,10 @@ extern int filetransfer_prog_1_freeresult ();
 #if defined(__STDC__) || defined(__cplusplus)
 extern  bool_t xdr_send_file_res (XDR *, send_file_res*);
 extern  bool_t xdr_retreive_file_res (XDR *, retreive_file_res*);
-extern  bool_t xdr_send_file_args (XDR *, send_file_args*);
 
 #else /* K&R C */
 extern bool_t xdr_send_file_res ();
 extern bool_t xdr_retreive_file_res ();
-extern bool_t xdr_send_file_args ();
 
 #endif /* K&R C */
 

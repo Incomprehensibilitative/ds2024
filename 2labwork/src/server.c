@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-send_file_res *send_file_1_svc(send_file_args *arg, struct svc_req *req) {
+send_file_res *send_file_1_svc(char **filename, struct svc_req *req) {
   /* NOTE: Do not forget to the proper return value */
 
   send_file_res *res = malloc(sizeof(send_file_res));
@@ -11,35 +11,58 @@ send_file_res *send_file_1_svc(send_file_args *arg, struct svc_req *req) {
   /*
    * Write the file received from the client req
    * */
-  FILE *fp = fopen(strcat(arg->fname, "_send_server"), "a");
-  if (fp == NULL) {
-    perror("fopen failed");
-    exit(EXIT_FAILURE);
+
+  FILE *fp_client_read = fopen(*filename, "r");
+  FILE *fp_server_write = fopen(strcat(*filename, "_send_server"), "w");
+
+  if (fp_client_read == NULL) {
+    res->errno = 1;
+    res->send_file_res_u.errmsg = strdup("fopen failed");
+    return res;
   }
 
-  printf("Writing: %s\n", arg->fdata);
+  fseek(fp_client_read, 0, SEEK_END);
+  long fsize = ftell(fp_client_read);
+  fseek(fp_client_read, 0, SEEK_SET);
 
-  int result = fputs(arg->fdata, fp);
+  char *buffer = malloc(fsize + 1);
+  fread(buffer, 1, fsize, fp_client_read);
+  buffer[fsize] = 0;
 
-  if (result == EOF) {
-    perror("fputs failed");
-    exit(EXIT_FAILURE);
-  }
+  fwrite(buffer, 1, fsize, fp_server_write);
 
-  if (fclose(fp) != 0) {
-    perror("fclose failed");
-    exit(EXIT_FAILURE);
-  }
+  fclose(fp_server_write);
+  fclose(fp_client_read);
 
   res->errno = 0;
 
   return res;
 }
 
-retreive_file_res *retreive_file_1_svc(char **arg, struct svc_req *req) {
-  static retreive_file_res res;
+retreive_file_res *retreive_file_1_svc(char **filename, struct svc_req *req) {
+  retreive_file_res *res = malloc(sizeof(send_file_res));
+  FILE *fp = fopen(*filename, "r");
 
-  /* TODO: Add your implementation here */
+  if (fp == NULL) {
+    res->errno = 1;
+    res->retreive_file_res_u.errmsg = strdup("fopen failed");
+    return res;
+  }
 
-  return &res;
+  fseek(fp, 0, SEEK_END);
+  long fsize = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+
+  printf("File size: %ld\n", fsize);
+
+  char *buffer = malloc(fsize + 1);
+  fread(buffer, 1, fsize, fp);
+  buffer[fsize] = 0;
+
+  fclose(fp);
+
+  res->errno = 0;
+  res->retreive_file_res_u.data = buffer;
+
+  return res;
 }

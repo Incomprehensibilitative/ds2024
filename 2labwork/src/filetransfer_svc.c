@@ -21,7 +21,7 @@ filetransfer_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
 	union {
 		char *retreive_file_1_arg;
-		send_file_args send_file_1_arg;
+		char *send_file_1_arg;
 	} argument;
 	char *result;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -39,7 +39,7 @@ filetransfer_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		break;
 
 	case send_file:
-		_xdr_argument = (xdrproc_t) xdr_send_file_args;
+		_xdr_argument = (xdrproc_t) xdr_wrapstring;
 		_xdr_result = (xdrproc_t) xdr_send_file_res;
 		local = (char *(*)(char *, struct svc_req *)) send_file_1_svc;
 		break;

@@ -42,15 +42,3 @@ xdr_retreive_file_res (XDR *xdrs, retreive_file_res *objp)
 	}
 	return TRUE;
 }
-
-bool_t
-xdr_send_file_args (XDR *xdrs, send_file_args *objp)
-{
-	register int32_t *buf;
-
-	 if (!xdr_string (xdrs, &objp->fname, MAXLEN))
-		 return FALSE;
-	 if (!xdr_string (xdrs, &objp->fdata, MAXLEN))
-		 return FALSE;
-	return TRUE;
-}

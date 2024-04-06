@@ -5,7 +5,6 @@
 #include <tirpc/rpc/clnt.h>
 
 #define SERVER "localhost"
-
 int main(void) {
   CLIENT *client;
 
@@ -20,51 +19,45 @@ int main(void) {
     exit(1);
   }
 
+  char *filename = "text";
+  send_file_res *send_res;
+  send_res = send_file_1(&filename, client);
+
+  if (send_res->errno != 0)
+    printf("%s\n", send_res->send_file_res_u.errmsg);
+  else
+    printf("Send File Successfully\n");
+
   /*
-   * Read the file that user want to send
-   * Then send it to server line by line
+   * ====================================
+   * Read a file from server
+   * ====================================
    * */
 
-  char *filename = "text";
-  FILE *fp = fopen(filename, "r");
-  char buffer[MAXLEN] = {0};
+  retreive_file_res *ret_res;
+  char *request_filename = "server_text";
 
-  send_file_res *res;
+  ret_res = retreive_file_1(&request_filename, client);
 
+  if (ret_res->errno != 0)
+    printf("%s\n", ret_res->retreive_file_res_u.errmsg);
+  else
+    printf("Retreieve File Successfully");
+
+  FILE *fp = fopen("server_text_recv", "w");
   if (fp == NULL) {
     perror("fopen failed");
     exit(EXIT_FAILURE);
   }
 
-  send_file_args *arg = malloc(sizeof(send_file_args));
-  if (arg == NULL) {
-    printf("Memory allocation failed\n");
-    return EXIT_FAILURE;
-  }
-
-  while (fgets(buffer, MAXLEN, fp) != NULL) {
-    printf("Reading: %s", buffer);
-
-    arg->fdata = strdup(buffer);
-    arg->fname = filename;
-
-    res = send_file_1(arg, client);
-    if (res->errno != 0) {
-      printf("%s\n", res->send_file_res_u.errmsg);
-    } else {
-      printf("Sent Successfully\n");
-    }
-
-    free(arg->fdata);
-    memset(buffer, 0, MAXLEN);
-  }
-
-  free(arg);
+  fputs(ret_res->retreive_file_res_u.data, fp);
 
   if (fclose(fp) != 0) {
     perror("fclose failed");
     exit(EXIT_FAILURE);
   }
+
+  clnt_destroy(client);
 
   return EXIT_SUCCESS;
 }

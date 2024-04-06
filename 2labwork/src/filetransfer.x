@@ -23,15 +23,9 @@ union retreive_file_res switch (int errno) {
     string errmsg<MAXLEN>; /* error message */
 };
 
-/* Define a struct for the send_file arguments */
-struct send_file_args {
-    string fname<MAXLEN>;
-    string fdata<MAXLEN>;
-};
-
 program FILETRANSFER_PROG {
   version FILETRANSFER_VERS {
     retreive_file_res retreive_file(string filename<MAXLEN>) = 1;
-    send_file_res send_file(send_file_args) = 2;
+    send_file_res send_file(string filename<MAXLEN>) = 2;
   } = 1;
 } = 0x20000000;

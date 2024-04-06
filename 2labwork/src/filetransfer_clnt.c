@@ -25,13 +25,13 @@ retreive_file_1(char **argp, CLIENT *clnt)
 }
 
 send_file_res *
-send_file_1(send_file_args *argp, CLIENT *clnt)
+send_file_1(char **argp, CLIENT *clnt)
 {
 	static send_file_res clnt_res;
 
 	memset((char *)&clnt_res, 0, sizeof(clnt_res));
 	if (clnt_call (clnt, send_file,
-		(xdrproc_t) xdr_send_file_args, (caddr_t) argp,
+		(xdrproc_t) xdr_wrapstring, (caddr_t) argp,
 		(xdrproc_t) xdr_send_file_res, (caddr_t) &clnt_res,
 		TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
